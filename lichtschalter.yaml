@@ -1,0 +1,48 @@
+blueprint:
+  name: Lichtschalter
+  description: >
+    Zustandsänderungen zwischen On und Off schalten das Ziel, da bei switch.toggle ansonsten jede Statusänderung einen Schaltvorgang auslöst
+  domain: automation
+  input:
+    schalter_eingang:
+      name: Schalter-Eingang
+      description: >
+        Der binäre Eingang, dessen Wechsel zwischen 'on' und 'off' das Umschalten
+        auslöst. Beide Richtungen lösen aus.
+      selector:
+        entity:
+          filter:
+            - domain: binary_sensor
+
+    ziel_entitaet:
+      name: Ziel-Entität
+      description: >
+        Was umgeschaltet werden soll. Mehrfachauswahl ist möglich; alle
+        ausgewählten Entitäten werden gemeinsam umgeschaltet.
+      selector:
+        entity:
+          multiple: true
+          filter:
+            - domain: light
+            - domain: input_boolean
+            - domain: switch
+
+mode: queued
+max: 10
+
+triggers:
+  - trigger: state
+    entity_id: !input schalter_eingang
+    from: "on"
+    to: "off"
+  - trigger: state
+    entity_id: !input schalter_eingang
+    from: "off"
+    to: "on"
+
+conditions: []
+
+actions:
+  - action: homeassistant.toggle
+    target:
+      entity_id: !input ziel_entitaet
